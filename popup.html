@@ -1,0 +1,82 @@
+﻿<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Av.Yusuf AVCI Uyap</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main>
+    <header class="brand">
+      <img src="assets_hero.webp" alt="Av.Yusuf Avci" />
+      <div>
+        <h1>Av.Yusuf AVCI Uyap</h1>
+        <p>Hızlı Oto Giriş Eklentisi</p>
+      </div>
+    </header>
+
+    <nav class="menu">
+      <button class="menu-btn active" data-tab="pin">Pin Kaydetme</button>
+      <button class="menu-btn" data-tab="auto">Oto Başlat</button>
+      <button class="menu-btn" data-tab="update">Update (Gitup)</button>
+      <button class="menu-btn" data-tab="about">Hakkında</button>
+    </nav>
+
+    <section class="tab active" id="tab-pin">
+      <label for="pin">PIN</label>
+      <input id="pin" type="password" placeholder="661661" />
+      <p class="muted">PIN yalnızca sizin tarayıcı depolamanızda saklanır.</p>
+    </section>
+
+    <section class="tab" id="tab-auto">
+      <label class="row">
+        <input id="auto" type="checkbox" />
+        <span>Otomatik yeniden giriş</span>
+      </label>
+
+      <div class="grid">
+        <div>
+          <label for="ival">Aralık</label>
+          <input id="ival" type="number" min="1" max="999" value="30" />
+        </div>
+        <div>
+          <label for="iunit">Birim</label>
+          <select id="iunit">
+            <option value="minutes">Dakika</option>
+            <option value="hours">Saat</option>
+          </select>
+        </div>
+      </div>
+
+      <p id="nextRun" class="muted">Sonraki çalışma: kapalı</p>
+    </section>
+
+    <section class="tab" id="tab-update">
+      <label for="gitup">Update (Gitup) URL</label>
+      <input id="gitup" type="text" placeholder="https://github.com/..." />
+      <div class="actions single">
+        <button id="openUpdate" class="secondary">Gitup Aç</button>
+      </div>
+      <p class="muted">Bu menü güncelleme adresinizi hızlı açmak içindir.</p>
+    </section>
+
+    <section class="tab" id="tab-about">
+      <p class="about-title">Hakkında</p>
+      <p class="about-text">
+        Av.Yusuf Avcı tarafından şahsi kullanım amacıyla Uyap oto girişi için oluşturulmuştur.
+        Eklenti, pop-up kapatma, e-imza seçimi, pin girişi ve giriş akışını tek panelde yönetmek için tasarlanmıştır.
+      </p>
+    </section>
+
+    <div class="actions">
+      <button id="save">Kaydet</button>
+      <button id="runNow" class="secondary">Şimdi Çalıştır</button>
+    </div>
+
+    <p id="status" class="muted"></p>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>
