@@ -48,9 +48,9 @@ if ($KeyPath) {
 }
 
 Write-Host "[1/4] Packing extension..."
-$proc = Start-Process -FilePath $chrome -ArgumentList $packArgs -Wait -PassThru -NoNewWindow
-if ($proc.ExitCode -ne 0) {
-  throw "Chrome pack işlemi başarısız oldu. ExitCode=$($proc.ExitCode)"
+& $chrome @packArgs
+if ($LASTEXITCODE -ne 0) {
+  throw "Chrome pack işlemi başarısız oldu. ExitCode=$LASTEXITCODE"
 }
 
 $generatedCrx = "$ext.crx"
@@ -89,3 +89,4 @@ Set-Content -Path $updatesXmlPath -Value $updatesXml -Encoding UTF8
 Write-Host "[3/4] updates.xml üretildi: $updatesXmlPath"
 Write-Host "[4/4] CRX hazır: $releaseCrxPath"
 Write-Host "Tamamlandi."
+
