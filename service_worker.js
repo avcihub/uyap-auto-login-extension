@@ -1,6 +1,8 @@
 ﻿const DEF = { pin: '', auto: false, val: 30, unit: 'minutes', gitup: '' };
 const ALARM = 'uyap_auto_login';
-const URL = '*://*/*';
+const UYAP_URL = 'https://avukat.uyap.gov.tr/*';
+const LATEST_RELEASE_API = 'https://api.github.com/repos/avcihub/uyap-auto-login-extension/releases/latest';
+const RELEASES_PAGE = 'https://github.com/avcihub/uyap-auto-login-extension/releases';
 
 chrome.runtime.onInstalled.addListener(async () => {
   const s = { ...DEF, ...(await chrome.storage.sync.get(Object.keys(DEF))) };
@@ -16,7 +18,7 @@ chrome.alarms.onAlarm.addListener(async (a) => {
   if (a.name !== ALARM) return;
   const s = await getS();
   if (!s.auto) return;
-  const tabs = await chrome.tabs.query({});
+  const tabs = await chrome.tabs.query({ url: UYAP_URL });
   for (const t of tabs) if (t.id) await run(t.id, s.pin);
 });
 
@@ -25,7 +27,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg?.type === 'GET') {
       const s = await getS();
       const a = await chrome.alarms.get(ALARM);
-      sendResponse({ ok: true, settings: s, nextRunAt: a?.scheduledTime || null });
+      sendResponse({ ok: true, settings: s, nextRunAt: a?.scheduledTime || null, version: chrome.runtime.getManifest().version });
       return;
     }
 
@@ -39,15 +41,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
     if (msg?.type === 'RUN_NOW') {
       const s = await getS();
-      const [active] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (active?.id) {
-        await run(active.id, s.pin);
-        sendResponse({ ok: true });
-        return;
-      }
-      const tabs = await chrome.tabs.query({});
+      const tabs = await chrome.tabs.query({ url: UYAP_URL });
       if (!tabs.length) {
-        sendResponse({ ok: false, error: 'UYAP sekmesi acik degil.' });
+        sendResponse({ ok: false, error: 'UYAP sekmesi acik degil. Once UYAP sayfasini acin.' });
         return;
       }
       await run(tabs[0].id, s.pin);
@@ -55,10 +51,68 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       return;
     }
 
+    if (msg?.type === 'CHECK_UPDATE') {
+      const current = chrome.runtime.getManifest().version;
+      const latest = await fetchLatestRelease();
+      if (!latest.ok) {
+        sendResponse(latest);
+        return;
+      }
+
+      const isNewer = compareVersions(latest.version, current) > 0;
+      sendResponse({
+        ok: true,
+        currentVersion: current,
+        latestVersion: latest.version,
+        hasUpdate: isNewer,
+        releaseUrl: latest.releaseUrl || RELEASES_PAGE,
+        crxUrl: latest.crxUrl || null
+      });
+      return;
+    }
+
     sendResponse({ ok: false, error: 'Unknown message' });
   })().catch((e) => sendResponse({ ok: false, error: String(e?.message || e) }));
   return true;
 });
+
+async function fetchLatestRelease() {
+  try {
+    const resp = await fetch(LATEST_RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } });
+    if (!resp.ok) return { ok: false, error: `GitHub API hatasi: ${resp.status}` };
+
+    const data = await resp.json();
+    const tag = String(data.tag_name || '').trim();
+    const version = tag.replace(/^v/i, '');
+    const releaseUrl = data.html_url || RELEASES_PAGE;
+
+    const assets = Array.isArray(data.assets) ? data.assets : [];
+    const crxAsset = assets.find((a) => String(a.name || '').toLowerCase().endsWith('.crx'));
+
+    return {
+      ok: true,
+      version,
+      releaseUrl,
+      crxUrl: crxAsset?.browser_download_url || null
+    };
+  } catch (e) {
+    return { ok: false, error: `GitHub baglanti hatasi: ${String(e?.message || e)}` };
+  }
+}
+
+function compareVersions(a, b) {
+  const pa = String(a).split('.').map((x) => Number(x) || 0);
+  const pb = String(b).split('.').map((x) => Number(x) || 0);
+  const len = Math.max(pa.length, pb.length);
+
+  for (let i = 0; i < len; i++) {
+    const va = pa[i] || 0;
+    const vb = pb[i] || 0;
+    if (va > vb) return 1;
+    if (va < vb) return -1;
+  }
+  return 0;
+}
 
 async function getS() {
   return sanitize({ ...DEF, ...(await chrome.storage.sync.get(Object.keys(DEF))) });
@@ -76,10 +130,10 @@ async function syncAlarm(s) {
   const minutes = s.unit === 'hours' ? s.val * 60 : s.val;
   await chrome.alarms.create(ALARM, { delayInMinutes: minutes, periodInMinutes: minutes });
 }
+
 async function run(tabId, pin) {
   await chrome.scripting.executeScript({ target: { tabId }, func: runner, args: [pin || ''] });
 }
-
 function runner(pin) {
   const n = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
   const vis = (e) => e && e.getBoundingClientRect && (() => {
@@ -133,7 +187,8 @@ function runner(pin) {
     const closeBtn = document.querySelector('.dx-popup-bottom .dx-button-danger, .dx-popup-bottom .dx-button');
     if (click(closeBtn)) return;
 
-    const eimza = [...document.querySelectorAll('button,a,[role="button"],.dx-button')].find((x) => n(x.innerText || x.textContent).includes('e-imza'));
+    const eimza = [...document.querySelectorAll('button,a,[role="button"],.dx-button')]
+      .find((x) => n(x.innerText || x.textContent).includes('e-imza'));
     if (eimza) click(eimza);
 
     const inp = [...document.querySelectorAll('input')].find((i) => {
@@ -164,4 +219,3 @@ function runner(pin) {
     }
   }, 1500);
 }
-

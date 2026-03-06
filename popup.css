@@ -1,8 +1,8 @@
 ﻿body {
   margin: 0;
-  width: 360px;
+  width: 380px;
   font-family: "Segoe UI", Arial, sans-serif;
-  background: linear-gradient(145deg, #eef3ff 0%, #f7f9ff 45%, #fff 100%);
+  background: linear-gradient(145deg, #eef3ff 0%, #f8faff 45%, #ffffff 100%);
   color: #1d2433;
 }
 
@@ -35,40 +35,20 @@ main {
   margin: 2px 0 0;
   font-size: 12px;
   color: #586174;
+  line-height: 1.35;
 }
 
-.menu {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.menu-btn {
-  height: 32px;
-  border: 1px solid #d5ddf0;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.menu-btn.active {
-  background: #1b63f0;
-  color: #fff;
-  border-color: #1b63f0;
-}
-
-.tab {
-  display: none;
+.card {
   background: #fff;
   border: 1px solid #dfe6f7;
   border-radius: 10px;
   padding: 10px;
+  margin-bottom: 10px;
 }
 
-.tab.active {
-  display: block;
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
 }
 
 label {
@@ -115,12 +95,10 @@ select {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 10px;
 }
 
 .actions.single {
   grid-template-columns: 1fr;
-  margin-top: 8px;
 }
 
 button {
@@ -139,12 +117,6 @@ button.secondary {
   margin: 8px 0 0;
   font-size: 12px;
   color: #5f6a80;
-}
-
-.about-title {
-  margin: 0 0 6px;
-  font-size: 13px;
-  font-weight: 700;
 }
 
 .about-text {

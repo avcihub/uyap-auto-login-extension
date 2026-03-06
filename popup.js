@@ -1,93 +1,87 @@
-﻿const pinEl = document.getElementById('pin');
-const autoEl = document.getElementById('auto');
-const valEl = document.getElementById('ival');
-const unitEl = document.getElementById('iunit');
-const gitupEl = document.getElementById('gitup');
-const saveEl = document.getElementById('save');
-const runNowEl = document.getElementById('runNow');
-const openUpdateEl = document.getElementById('openUpdate');
-const nextRunEl = document.getElementById('nextRun');
-const statusEl = document.getElementById('status');
+﻿const pinEl = document.getElementById("pin");
+const autoEl = document.getElementById("auto");
+const valEl = document.getElementById("ival");
+const unitEl = document.getElementById("iunit");
+const saveEl = document.getElementById("save");
+const runNowEl = document.getElementById("runNow");
+const checkUpdateEl = document.getElementById("checkUpdate");
+const nextRunEl = document.getElementById("nextRun");
+const statusEl = document.getElementById("status");
+const updateInfoEl = document.getElementById("updateInfo");
 
-const menuButtons = [...document.querySelectorAll('.menu-btn')];
-const tabs = {
-  pin: document.getElementById('tab-pin'),
-  auto: document.getElementById('tab-auto'),
-  update: document.getElementById('tab-update'),
-  about: document.getElementById('tab-about')
-};
+let latestReleaseUrl = "https://github.com/avcihub/uyap-auto-login-extension/releases";
 
 init();
 
-for (const btn of menuButtons) {
-  btn.addEventListener('click', () => showTab(btn.dataset.tab));
-}
-
-saveEl.addEventListener('click', async () => {
+saveEl.addEventListener("click", async () => {
   const payload = {
     pin: pinEl.value.trim(),
     auto: autoEl.checked,
     val: Math.max(1, Math.min(999, Number(valEl.value) || 30)),
-    unit: unitEl.value === 'hours' ? 'hours' : 'minutes',
-    gitup: gitupEl.value.trim()
+    unit: unitEl.value === "hours" ? "hours" : "minutes"
   };
 
-  const res = await send({ type: 'SAVE', payload });
-  if (!res?.ok) return setStatus(res?.error || 'Kayit hatasi.');
+  const res = await send({ type: "SAVE", payload });
+  if (!res?.ok) return setStatus(res?.error || "Kayit hatasi.");
 
-  const refresh = await send({ type: 'GET' });
+  const refresh = await send({ type: "GET" });
   updateNextRun(refresh?.nextRunAt || null);
-  setStatus('Ayarlar kaydedildi.');
+  setStatus("Ayarlar kaydedildi.");
 });
 
-runNowEl.addEventListener('click', async () => {
-  const res = await send({ type: 'RUN_NOW' });
-  if (!res?.ok) return setStatus(res?.error || 'Calistirma hatasi.');
-  setStatus('Calistirildi.');
+runNowEl.addEventListener("click", async () => {
+  const res = await send({ type: "RUN_NOW" });
+  if (!res?.ok) return setStatus(res?.error || "Calistirma hatasi.");
+  setStatus("UYAP sekmesinde calistirildi.");
 });
 
-openUpdateEl.addEventListener('click', async () => {
-  const url = gitupEl.value.trim();
-  if (!url) return setStatus('Once update adresi girin.');
-
-  if (!/^https?:\/\//i.test(url)) {
-    setStatus('Adres http:// veya https:// ile baslamali.');
-    return;
-  }
-
-  await chrome.tabs.create({ url });
+checkUpdateEl.addEventListener("click", async () => {
+  await checkUpdate(true);
 });
 
 async function init() {
-  const res = await send({ type: 'GET' });
-  if (!res?.ok) return setStatus(res?.error || 'Ayarlar okunamadi.');
+  const res = await send({ type: "GET" });
+  if (!res?.ok) return setStatus(res?.error || "Ayarlar okunamadi.");
 
-  pinEl.value = res.settings.pin || '';
+  pinEl.value = res.settings.pin || "";
   autoEl.checked = !!res.settings.auto;
   valEl.value = String(res.settings.val || 30);
-  unitEl.value = res.settings.unit || 'minutes';
-  gitupEl.value = res.settings.gitup || '';
+  unitEl.value = res.settings.unit || "minutes";
   updateNextRun(res.nextRunAt);
-  showTab('pin');
+
+  await checkUpdate(false);
 }
 
-function showTab(name) {
-  for (const btn of menuButtons) {
-    btn.classList.toggle('active', btn.dataset.tab === name);
+async function checkUpdate(fromButton) {
+  updateInfoEl.textContent = "GitHub surum kontrolu yapiliyor...";
+  const res = await send({ type: "CHECK_UPDATE" });
+
+  if (!res?.ok) {
+    updateInfoEl.textContent = res?.error || "Surum kontrolu basarisiz.";
+    return;
   }
 
-  Object.entries(tabs).forEach(([key, el]) => {
-    el.classList.toggle('active', key === name);
-  });
+  latestReleaseUrl = res.releaseUrl || latestReleaseUrl;
+
+  if (res.hasUpdate) {
+    updateInfoEl.innerHTML = "Yeni surum mevcut: <b>" + res.latestVersion + "</b> (mevcut: " + res.currentVersion + ")";
+    checkUpdateEl.textContent = "Yeni Surumu Ac";
+    if (fromButton) {
+      await chrome.tabs.create({ url: latestReleaseUrl });
+    }
+  } else {
+    updateInfoEl.textContent = "Guncel surum kullaniyorsunuz: " + res.currentVersion;
+    checkUpdateEl.textContent = "Guncelleme Kontrol Et";
+  }
 }
 
 function updateNextRun(ts) {
   if (!ts) {
-    nextRunEl.textContent = 'Sonraki çalışma: kapalı';
+    nextRunEl.textContent = "Sonraki çalışma: kapalı";
     return;
   }
   const d = new Date(ts);
-  nextRunEl.textContent = `Sonraki çalışma: ${d.toLocaleString('tr-TR')}`;
+  nextRunEl.textContent = "Sonraki çalışma: " + d.toLocaleString("tr-TR");
 }
 
 function setStatus(text) {
@@ -97,3 +91,4 @@ function setStatus(text) {
 function send(msg) {
   return new Promise((resolve) => chrome.runtime.sendMessage(msg, resolve));
 }
+

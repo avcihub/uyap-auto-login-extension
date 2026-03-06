@@ -12,29 +12,23 @@
       <img src="assets_hero.webp" alt="Av.Yusuf Avci" />
       <div>
         <h1>Av.Yusuf AVCI Uyap</h1>
-        <p>Hızlı Oto Giriş Eklentisi</p>
+        <p>Av.Yusuf Avcı tarafından şahsi kullanım amacıyla Uyap oto girişi için oluşturulmuştur.</p>
       </div>
     </header>
 
-    <nav class="menu">
-      <button class="menu-btn active" data-tab="pin">Pin Kaydetme</button>
-      <button class="menu-btn" data-tab="auto">Oto Başlat</button>
-      <button class="menu-btn" data-tab="update">Update (Gitup)</button>
-      <button class="menu-btn" data-tab="about">Hakkında</button>
-    </nav>
-
-    <section class="tab active" id="tab-pin">
+    <section class="card">
+      <h2>Pin Kaydetme</h2>
       <label for="pin">PIN</label>
       <input id="pin" type="password" placeholder="661661" />
-      <p class="muted">PIN yalnızca sizin tarayıcı depolamanızda saklanır.</p>
+      <p class="muted">PIN yalnızca yerel tarayıcı depolamanızda tutulur.</p>
     </section>
 
-    <section class="tab" id="tab-auto">
+    <section class="card">
+      <h2>Oto Başlat</h2>
       <label class="row">
         <input id="auto" type="checkbox" />
         <span>Otomatik yeniden giriş</span>
       </label>
-
       <div class="grid">
         <div>
           <label for="ival">Aralık</label>
@@ -48,35 +42,32 @@
           </select>
         </div>
       </div>
-
       <p id="nextRun" class="muted">Sonraki çalışma: kapalı</p>
     </section>
 
-    <section class="tab" id="tab-update">
-      <label for="gitup">Update (Gitup) URL</label>
-      <input id="gitup" type="text" placeholder="https://github.com/..." />
+    <section class="card">
+      <h2>Update</h2>
       <div class="actions single">
-        <button id="openUpdate" class="secondary">Gitup Aç</button>
+        <button id="checkUpdate" class="secondary">Güncelleme Kontrol Et</button>
       </div>
-      <p class="muted">Bu menü güncelleme adresinizi hızlı açmak içindir.</p>
+      <p id="updateInfo" class="muted">Sürüm kontrolü bekleniyor...</p>
     </section>
 
-    <section class="tab" id="tab-about">
-      <p class="about-title">Hakkında</p>
+    <section class="card">
+      <h2>Hakkında</h2>
       <p class="about-text">
-        Av.Yusuf Avcı tarafından şahsi kullanım amacıyla Uyap oto girişi için oluşturulmuştur.
-        Eklenti, pop-up kapatma, e-imza seçimi, pin girişi ve giriş akışını tek panelde yönetmek için tasarlanmıştır.
+        Bu eklenti Av.Yusuf Avcı için kişisel kullanım akışını hızlandırmak amacıyla tasarlanmıştır.
+        Pop-up kapatma, e-imza akışı, pin doldurma ve giriş tekrar planlama işlemlerini tek panelde toplar.
       </p>
     </section>
 
     <div class="actions">
       <button id="save">Kaydet</button>
-      <button id="runNow" class="secondary">Şimdi Çalıştır</button>
+      <button id="runNow">Şimdi Çalıştır</button>
     </div>
 
     <p id="status" class="muted"></p>
   </main>
-
   <script src="popup.js"></script>
 </body>
 </html>
